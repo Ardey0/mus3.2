@@ -18,16 +18,15 @@ public class Lift {
     private final int tolerance = 0;
     private int target = 0;
     // TODO: calibreaza
-    public final int    DOWN = 0,
-                        MAX_HEIGHT = 3400,
-                        HIGH_BASKET = 3200,
-                        LOW_BASKET = 1700,
-                        PICKUP_HIGH = 750,
-                        PICKUP_LOW = 500,
-                        PICKUP_FENCE = 220,
-                        HIGH_RUNG = 1100,
-                        LOW_RUNG = 300,
-                        ASCENT = 2750;
+    public static final int DOWN = 0,
+                            MAX_HEIGHT = 3400,
+                            HIGH_BASKET = 3200,
+                            LOW_BASKET = 1700,
+                            PICKUP_HIGH = 750,
+                            PICKUP_LOW = 500,
+                            PICKUP_FENCE = 220,
+                            HIGH_RUNG = 1100,
+                            LOW_RUNG = 300;
 
     public Lift(@NonNull HardwareMap hardwareMap) {
         this.leftMotor = hardwareMap.get(DcMotorEx.class, "leftLift");
@@ -64,6 +63,10 @@ public class Lift {
 
     public int getPosition() {
         return encoder.getCurrentPosition();
+    }
+
+    public int delta() {
+        return Math.abs(target - encoder.getCurrentPosition());
     }
 
     public void resetEncoder() {

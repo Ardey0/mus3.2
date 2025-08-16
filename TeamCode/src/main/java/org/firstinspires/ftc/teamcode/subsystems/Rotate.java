@@ -9,9 +9,9 @@ public class Rotate {
     private ServoImplEx servo = null;
 
     // TODO: calibreaza
-    public final double STRAIGHT = 0.5,
-                        LEFT = 0,
-                        RIGHT = 1;
+    public static final double  STRAIGHT = 0.5,
+                                LEFT = 0,
+                                RIGHT = 1;
 
     public Rotate(@NonNull HardwareMap hardwareMap) {
         this.servo = hardwareMap.get(ServoImplEx.class, "rotate");

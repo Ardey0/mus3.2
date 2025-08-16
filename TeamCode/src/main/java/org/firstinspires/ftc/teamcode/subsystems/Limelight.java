@@ -8,12 +8,12 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class Limelight {
     private Limelight3A limelight = null;
-    public final int    RED_YELLOW = 0,
-                        BLUE_YELLOW = 1,
-                        RED = 4,
-                        BLUE = 3,
-                        YELLOW = 6,
-                        RED_YELLOW_EXPERIMENTAL = 7;
+    public static final int RED_YELLOW = 0,
+                            BLUE_YELLOW = 1,
+                            RED = 4,
+                            BLUE = 3,
+                            YELLOW = 6,
+                            RED_YELLOW_EXPERIMENTAL = 7;
 
 
     public Limelight(@NonNull HardwareMap hardwareMap) {

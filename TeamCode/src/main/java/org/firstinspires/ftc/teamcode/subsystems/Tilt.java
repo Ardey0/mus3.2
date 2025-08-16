@@ -9,9 +9,9 @@ public class Tilt {
     private ServoImplEx servo = null;
 
     // TODO: calibreaza
-    public final double UP = 0,
-                        DOWN = 1,
-                        STRAIGHT = 0.5;
+    public static final double  UP = 0,
+                                DOWN = 1,
+                                STRAIGHT = 0.5;
 
     public Tilt(@NonNull HardwareMap hardwareMap) {
         this.servo = hardwareMap.get(ServoImplEx.class, "tilt");

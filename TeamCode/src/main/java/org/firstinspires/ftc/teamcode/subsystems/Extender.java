@@ -15,11 +15,11 @@ public class Extender {
     private final int tolerance = 0;
     private int target = 0;
     // TODO: calibreaza
-    public final int    RETRACTED = 0,
-                        PICKUP = 200,
-                        SCORE_RUNG = 350,
-                        SCUIPA = 200,
-                        MAX_LENGTH = 390;
+    public static final int RETRACTED = 0,
+                            PICKUP = 200,
+                            SCORE_RUNG = 350,
+                            SCUIPA = 200,
+                            MAX_LENGTH = 390;
 
     public Extender(@NonNull HardwareMap hardwareMap) {
         this.motor = hardwareMap.get(DcMotorEx.class, "extender");
@@ -47,6 +47,10 @@ public class Extender {
 
     public int getPosition() {
         return motor.getCurrentPosition();
+    }
+
+    public int delta() {
+        return Math.abs(target - motor.getCurrentPosition());
     }
 
     public void resetEncoder() {
