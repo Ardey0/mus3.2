@@ -58,7 +58,7 @@ public class LiftDebug extends LinearOpMode {
             } else if (gamepad2.y) {
                 target = lift.PICKUP_LOW;
             } else if (gamepad2.dpad_left) {
-                target = lift.ASCENT;
+                target = 1900;
             } else if (gamepad2.dpad_down) {
                 target = lift.DOWN;
             } else if (gamepad2.dpad_up) {

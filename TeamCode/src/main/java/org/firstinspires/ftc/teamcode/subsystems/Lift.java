@@ -31,7 +31,7 @@ public class Lift {
     public Lift(@NonNull HardwareMap hardwareMap) {
         this.leftMotor = hardwareMap.get(DcMotorEx.class, "leftLift");
         this.rightMotor = hardwareMap.get(DcMotorEx.class, "rightLift");
-        this.encoder = hardwareMap.get(DcMotorEx.class, "liftEncoder"); // de schimbat in motorul cu encoderul
+        this.encoder = hardwareMap.get(DcMotorEx.class, "frontLeft"); // de schimbat in motorul cu encoderul
 
         this.controller = new PIDFController(kP, kI, kD, kF);
         this.controller.setTolerance(tolerance);

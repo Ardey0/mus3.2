@@ -197,8 +197,8 @@ public class SampleTrackingDebug extends LinearOpMode {
                     if (currentGamepad2.start && !previousGamepad2.start) {
                         xDegrees = limelight.getTargetTx();
                         yDegrees = limelight.getTargetTy();
-                        xOffsetCm = ; /// Trebuie refacuta formula asta
-                        yOffsetCm = ;
+//                        xOffsetCm = ; /// Trebuie refacuta formula asta
+//                        yOffsetCm = ;
                         targetHeadingRad = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + Math.atan(xOffsetCm / yOffsetCm);
                         robotState = RobotState.ALIGN_SAMPLE;
                     }
@@ -218,8 +218,8 @@ public class SampleTrackingDebug extends LinearOpMode {
                     if (currentGamepad2.start && !previousGamepad2.start) {
                         xDegrees = limelight.getTargetTx(); // Atentie ca e in grade
                         yDegrees = limelight.getTargetTy();
-                        xOffsetCm = ; /// Trebuie refacuta formula asta
-                        yOffsetCm = ;
+//                        xOffsetCm = ; /// Trebuie refacuta formula asta
+//                        yOffsetCm = ;
                         targetHeadingRad = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) + Math.atan(xOffsetCm / yOffsetCm);
                         targetLengthCm = yOffsetCm / Math.cos(targetHeadingRad);
                         robotState = RobotState.ALIGN_SAMPLE;
@@ -236,7 +236,7 @@ public class SampleTrackingDebug extends LinearOpMode {
                 case ALIGN_SAMPLE:
                     double currentHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
                     double error = targetHeadingRad - currentHeading;
-                    extender.setTarget(targetLengthCm * );  // Conversia in ticks + cast la int
+//                    extender.setTarget(targetLengthCm * );  // Conversia in ticks + cast la int
                     if (Math.abs(error) > 5) {
                         double robotAngularVelocity = pidf.calculate(currentHeading, targetHeadingRad);
                         ChassisSpeeds robotSpeeds = new ChassisSpeeds(0, 0, robotAngularVelocity);

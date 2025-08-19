@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -14,6 +15,8 @@ import com.seattlesolvers.solverslib.kinematics.wpilibkinematics.MecanumDriveKin
 import com.seattlesolvers.solverslib.kinematics.wpilibkinematics.MecanumDriveWheelSpeeds;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.Pose2D;
 import org.firstinspires.ftc.teamcode.subsystems.Claw;
 import org.firstinspires.ftc.teamcode.subsystems.Extender;
 import org.firstinspires.ftc.teamcode.subsystems.Lift;
@@ -89,13 +92,13 @@ public class TeleOp1 extends LinearOpMode {
         DcMotorEx backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
         DcMotorEx backRight = hardwareMap.get(DcMotorEx.class, "backRight");
 
-        // Initializeaza IMU
-        IMU imu = hardwareMap.get(IMU.class, "imu");
-        RevHubOrientationOnRobot.LogoFacingDirection logoDirection = RevHubOrientationOnRobot.LogoFacingDirection.UP;
-        RevHubOrientationOnRobot.UsbFacingDirection  usbDirection  = RevHubOrientationOnRobot.UsbFacingDirection.FORWARD;
-        RevHubOrientationOnRobot orientationOnRobot = new RevHubOrientationOnRobot(logoDirection, usbDirection);
-        imu.initialize(new IMU.Parameters(orientationOnRobot));
-
+        // Initializeaza Pinpoint
+        GoBildaPinpointDriver pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
+        pinpoint.setOffsets(80, 0, DistanceUnit.MM);
+        pinpoint.setEncoderResolution(37.251351252, DistanceUnit.MM);
+        pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,
+                GoBildaPinpointDriver.EncoderDirection.REVERSED);
+        pinpoint.resetPosAndIMU();
         // TODO: Reverse la motoare
 
         // Initializeaza subsystems
@@ -165,6 +168,8 @@ public class TeleOp1 extends LinearOpMode {
             backLeft.setPower(backLeftPower);
             frontRight.setPower(frontRightPower);
             backRight.setPower(backRightPower);
+
+            pinpoint.update();
 
             lift.runToTarget();
             extender.runToTarget();
@@ -274,9 +279,10 @@ public class TeleOp1 extends LinearOpMode {
                     if (currentGamepad2.start && !previousGamepad2.start) {
                         xDegrees = limelight.getTargetTx();
                         yDegrees = limelight.getTargetTy();
-                        xOffsetCm = ; /// Trebuie refacuta formula asta
-                        yOffsetCm = ;
-                        targetHeadingRad = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES) + Math.atan(xOffsetCm / yOffsetCm);
+//                        xOffsetCm = ; /// Trebuie refacuta formula asta
+//                        yOffsetCm = ;
+                        targetHeadingRad = pinpoint.getHeading(AngleUnit.RADIANS) + Math.atan(xOffsetCm / yOffsetCm);
+                        targetLengthCm = yOffsetCm / Math.cos(targetHeadingRad);
                         robotState = RobotState.ALIGN_SAMPLE;
                     }
                     break;
@@ -295,18 +301,18 @@ public class TeleOp1 extends LinearOpMode {
                     if (currentGamepad2.start && !previousGamepad2.start) {
                         xDegrees = limelight.getTargetTx(); // Atentie ca e in grade
                         yDegrees = limelight.getTargetTy();
-                        xOffsetCm = ; /// Trebuie refacuta formula asta
-                        yOffsetCm = ;
-                        targetHeadingRad = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS) + Math.atan(xOffsetCm / yOffsetCm);
+//                        xOffsetCm = ; /// Trebuie refacuta formula asta
+//                        yOffsetCm = ;
+                        targetHeadingRad = pinpoint.getHeading(AngleUnit.RADIANS) + Math.atan(xOffsetCm / yOffsetCm);
                         targetLengthCm = yOffsetCm / Math.cos(targetHeadingRad);
                         robotState = RobotState.ALIGN_SAMPLE;
                     }
                     break;
 
                 case ALIGN_SAMPLE:
-                    double currentHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.DEGREES);
+                    double currentHeading = pinpoint.getHeading(AngleUnit.RADIANS);
                     double error = targetHeadingRad - currentHeading;
-                    extender.setTarget(targetLengthCm * );  // Conversia in ticks + cast la int
+//                    extender.setTarget(targetLengthCm * );  // Conversia in ticks + cast la int
                     if (Math.abs(error) > 5) {
                         double robotAngularVelocity = pidf.calculate(currentHeading, targetHeadingRad);
                         ChassisSpeeds robotSpeeds = new ChassisSpeeds(0, 0, robotAngularVelocity);
