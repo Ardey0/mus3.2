@@ -1,16 +1,20 @@
 package org.firstinspires.ftc.teamcode.opmodes.debug;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.subsystems.Extender;
 
 import java.util.List;
 
+@TeleOp
+@Config
 public class ExtenderDebug extends LinearOpMode {
     private Extender extender = null;
-    public static double kP = 0, kI = 0, kD = 0, kF = 0;
+    public static double kP = 0.05, kI = 0, kD = 0.0015;
     public static int target = 0;
     @Override
     public void runOpMode() throws InterruptedException {
@@ -50,20 +54,20 @@ public class ExtenderDebug extends LinearOpMode {
             }
 
             if (gamepad2.a) {
-                target = extender.RETRACTED;
+                target = Extender.RETRACTED;
             } else if (gamepad2.b) {
-                target = extender.PICKUP;
+                target = Extender.PICKUP;
             } else if (gamepad2.x) {
-                target = extender.SCORE_RUNG;
+                target = Extender.SCORE_RUNG;
             } else if (gamepad2.y) {
-                target = extender.SCUIPA;
+                target = Extender.SCUIPA;
             } else if (gamepad2.dpad_left) {
-                target = extender.MAX_LENGTH;
+                target = Extender.MAX_LENGTH;
             } else if (gamepad2.start) {
                 extender.resetEncoder();
             }
 
-            extender.updateCoefficients(kP, kI, kD, kF);
+            extender.updateCoefficients(kP, kI, kD);
             extender.setTarget(target);
             extender.runToTarget();
 

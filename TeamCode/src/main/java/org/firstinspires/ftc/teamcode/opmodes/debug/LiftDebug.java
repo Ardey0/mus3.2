@@ -1,16 +1,20 @@
 package org.firstinspires.ftc.teamcode.opmodes.debug;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.subsystems.Lift;
 
 import java.util.List;
 
+@TeleOp(name = "LiftDebug", group = "Test")
+@Config
 public class LiftDebug extends LinearOpMode {
     private Lift lift = null;
-    public static double kP = 0, kI = 0, kD = 0, kF = 0;
+    public static double kP = 0.045, kI = 0.01, kD = 0.00001, kF = 0.00008;
     public static int target = 0;
     @Override
     public void runOpMode() throws InterruptedException {
@@ -50,25 +54,25 @@ public class LiftDebug extends LinearOpMode {
             }
 
             if (gamepad2.a) {
-                target = lift.HIGH_BASKET;
+                target = Lift.HIGH_BASKET;
             } else if (gamepad2.b) {
-                target = lift.HIGH_RUNG;
+                target = Lift.HIGH_RUNG;
             } else if (gamepad2.x) {
-                target = lift.PICKUP_HIGH;
+                target = Lift.PICKUP_HIGH;
             } else if (gamepad2.y) {
-                target = lift.PICKUP_LOW;
+                target = Lift.PICKUP_LOW;
             } else if (gamepad2.dpad_left) {
                 target = 1900;
             } else if (gamepad2.dpad_down) {
-                target = lift.DOWN;
+                target = Lift.DOWN;
             } else if (gamepad2.dpad_up) {
-                target = lift.MAX_HEIGHT;
+                target = Lift.MAX_HEIGHT;
             } else if (gamepad2.dpad_right) {
-                target = lift.PICKUP_FENCE;
+                target = Lift.PICKUP_FENCE;
             } else if (gamepad2.right_bumper) {
-                target = lift.LOW_BASKET;
+                target = Lift.LOW_BASKET;
             } else if (gamepad2.left_bumper) {
-                target = lift.LOW_RUNG;
+                target = Lift.LOW_RUNG;
             } else if (gamepad2.start) {
                 lift.resetEncoder();
             }

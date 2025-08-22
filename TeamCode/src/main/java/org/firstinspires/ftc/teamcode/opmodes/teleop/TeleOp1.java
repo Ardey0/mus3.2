@@ -1,10 +1,13 @@
 package org.firstinspires.ftc.teamcode.opmodes.teleop;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.hardware.rev.RevHubOrientationOnRobot;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.IMU;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -26,6 +29,8 @@ import org.firstinspires.ftc.teamcode.subsystems.Tilt;
 
 import java.util.List;
 
+@TeleOp
+@Config
 public class TeleOp1 extends LinearOpMode {
 
     // Robot state enum
@@ -50,19 +55,19 @@ public class TeleOp1 extends LinearOpMode {
         ABORT
     }
     private RobotState robotState = null;
-    private final double kP = 0, kI = 0, kD = 0, kF = 0;
+    private final double kP = 45, kI = 1, kD = 1.7, kF = 0; // TODO: Inapoi in private final
+    private final double centerOfRobotToCameraCm = 26.5, pickupHighHeightCm = 32.5, pickupLowHeightCm = 19.4, cameraToClawCm = 2;
 
     @Override
     public void runOpMode() throws InterruptedException {
-        // TODO: Locatia adevarata a rotilor relativa la centrul robotului (metri)
         Translation2d frontLeftLocation =
-                new Translation2d(0.381, 0.381);
+                new Translation2d(0.162, 0.126);
         Translation2d frontRightLocation =
-                new Translation2d(0.381, -0.381);
+                new Translation2d(0.162, -0.126);
         Translation2d backLeftLocation =
-                new Translation2d(-0.381, 0.381);
+                new Translation2d(-0.162, 0.126);
         Translation2d backRightLocation =
-                new Translation2d(-0.381, -0.381);
+                new Translation2d(-0.162, -0.126);
 
         MecanumDriveKinematics kinematics = new MecanumDriveKinematics
                 (
@@ -92,6 +97,9 @@ public class TeleOp1 extends LinearOpMode {
         DcMotorEx backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
         DcMotorEx backRight = hardwareMap.get(DcMotorEx.class, "backRight");
 
+        backLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+        frontLeft.setDirection(DcMotorSimple.Direction.REVERSE);
+
         // Initializeaza Pinpoint
         GoBildaPinpointDriver pinpoint = hardwareMap.get(GoBildaPinpointDriver.class, "pinpoint");
         pinpoint.setOffsets(80, 0, DistanceUnit.MM);
@@ -99,7 +107,6 @@ public class TeleOp1 extends LinearOpMode {
         pinpoint.setEncoderDirections(GoBildaPinpointDriver.EncoderDirection.FORWARD,
                 GoBildaPinpointDriver.EncoderDirection.REVERSED);
         pinpoint.resetPosAndIMU();
-        // TODO: Reverse la motoare
 
         // Initializeaza subsystems
         Claw claw = new Claw(hardwareMap);
@@ -111,12 +118,14 @@ public class TeleOp1 extends LinearOpMode {
 
         telemetry.setMsTransmissionInterval(250);
 
+        // Init position
         rotate.setPosition(Rotate.STRAIGHT);
         tilt.setPosition(Tilt.STRAIGHT);
         extender.setTarget(Extender.RETRACTED);
         tilt.setPosition(Tilt.UP);
         lift.setTarget(Lift.DOWN);
         claw.setPosition(Claw.CLOSED);
+        limelight.switchPipeline(Limelight.RED_YELLOW_EXPERIMENTAL);
 
         // Set bulk read mode
         List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
@@ -173,6 +182,8 @@ public class TeleOp1 extends LinearOpMode {
 
             lift.runToTarget();
             extender.runToTarget();
+
+            pidf.setPIDF(kP, kI, kD, kF);
 
             switch (robotState) {
                 case NEUTRAL:
@@ -279,12 +290,15 @@ public class TeleOp1 extends LinearOpMode {
                     if (currentGamepad2.start && !previousGamepad2.start) {
                         xDegrees = limelight.getTargetTx();
                         yDegrees = limelight.getTargetTy();
-//                        xOffsetCm = ; /// Trebuie refacuta formula asta
-//                        yOffsetCm = ;
-                        targetHeadingRad = pinpoint.getHeading(AngleUnit.RADIANS) + Math.atan(xOffsetCm / yOffsetCm);
-                        targetLengthCm = yOffsetCm / Math.cos(targetHeadingRad);
+                        xOffsetCm = Math.tan(Math.toRadians(xDegrees)) * pickupHighHeightCm;
+                        yOffsetCm = Math.tan(Math.toRadians(yDegrees)) * pickupHighHeightCm + centerOfRobotToCameraCm + extender.getPosition() * 11.2 / 145.1;
+                        targetHeadingRad = pinpoint.getHeading(AngleUnit.RADIANS) - Math.atan(xOffsetCm / yOffsetCm);
+                        targetLengthCm = yOffsetCm - centerOfRobotToCameraCm - cameraToClawCm;
                         robotState = RobotState.ALIGN_SAMPLE;
                     }
+
+                    telemetry.addData("Limelight tx:", limelight.getTargetTx());
+                    telemetry.addData("Limelight ty:", limelight.getTargetTy());
                     break;
 
                 case COLLECTING_GROUND_LOW:
@@ -299,21 +313,30 @@ public class TeleOp1 extends LinearOpMode {
                         extenderManualCompensation -= 5;
 
                     if (currentGamepad2.start && !previousGamepad2.start) {
-                        xDegrees = limelight.getTargetTx(); // Atentie ca e in grade
+                        xDegrees = limelight.getTargetTx();
                         yDegrees = limelight.getTargetTy();
-//                        xOffsetCm = ; /// Trebuie refacuta formula asta
-//                        yOffsetCm = ;
-                        targetHeadingRad = pinpoint.getHeading(AngleUnit.RADIANS) + Math.atan(xOffsetCm / yOffsetCm);
-                        targetLengthCm = yOffsetCm / Math.cos(targetHeadingRad);
+                        xOffsetCm = Math.tan(Math.toRadians(xDegrees)) * pickupHighHeightCm;
+                        yOffsetCm = Math.tan(Math.toRadians(yDegrees)) * pickupHighHeightCm + centerOfRobotToCameraCm + extender.getPosition() * 11.2 / 145.1;
+                        targetHeadingRad = pinpoint.getHeading(AngleUnit.RADIANS) - Math.atan(xOffsetCm / yOffsetCm);
+                        targetLengthCm = yOffsetCm - centerOfRobotToCameraCm - 3;
                         robotState = RobotState.ALIGN_SAMPLE;
                     }
+                    
+                    telemetry.addData("Limelight tx:", limelight.getTargetTx());
+                    telemetry.addData("Limelight ty:", limelight.getTargetTy());
                     break;
 
                 case ALIGN_SAMPLE:
                     double currentHeading = pinpoint.getHeading(AngleUnit.RADIANS);
                     double error = targetHeadingRad - currentHeading;
-//                    extender.setTarget(targetLengthCm * );  // Conversia in ticks + cast la int
-                    if (Math.abs(error) > 5) {
+                    extender.setTarget((int)(targetLengthCm / 11.2 * 145.1));  // Conversia in ticks + cast la int
+
+                    telemetry.addData("Heading error", Math.toDegrees(error));
+                    telemetry.addData("Target heading", Math.toDegrees(targetHeadingRad));
+                    telemetry.addData("Target length cm", targetLengthCm);
+                    telemetry.addData("Target length ticks", targetLengthCm / 11.2 * 145.1);
+                    telemetry.addData("Extender error", extender.delta());
+                    if (Math.abs(error) > 0.02 || extender.delta() > 2) {
                         double robotAngularVelocity = pidf.calculate(currentHeading, targetHeadingRad);
                         ChassisSpeeds robotSpeeds = new ChassisSpeeds(0, 0, robotAngularVelocity);
                         MecanumDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(robotSpeeds);
@@ -321,21 +344,25 @@ public class TeleOp1 extends LinearOpMode {
                         backLeft.setPower(wheelSpeeds.rearLeftMetersPerSecond);
                         frontRight.setPower(wheelSpeeds.frontRightMetersPerSecond);
                         backRight.setPower(wheelSpeeds.rearRightMetersPerSecond);
-                        break;
+                    } else {
+                        rotate.trackTarget(limelight);
+                        robotState = RobotState.COLLECT_GROUND_AND_RESET;
                     }
-                    rotate.trackTarget(limelight);
-                    robotState = RobotState.COLLECT_GROUND_AND_RESET;
                     break;
 
                 case COLLECT_GROUND_AND_RESET:
                     lift.setTarget(Lift.DOWN);
-                    claw.setPosition(Claw.CLOSED);
-                    if (claw.getState() == Claw.State.CLOSED_WITH_SAMPLE) {
-                        tilt.setPosition(Tilt.UP);
-                        rotate.setPosition(Rotate.STRAIGHT);
-                        extender.setTarget(Extender.RETRACTED);
-                        robotState = RobotState.NEUTRAL;
+                    if (lift.delta() < 5) {
+                        claw.setPosition(Claw.CLOSED);
+                        if (claw.getState() == Claw.State.CLOSED_WITH_SAMPLE) {
+                            tilt.setPosition(Tilt.UP);
+                            rotate.setPosition(Rotate.STRAIGHT);
+                            extender.setTarget(Extender.RETRACTED);
+                            robotState = RobotState.NEUTRAL;
+                        }
                     }
+                    telemetry.addData("Claw state", claw.getState());
+                    telemetry.addData("Claw encoder voltage", claw.getPosition());
                     break;
 
                 case COLLECTING_FENCE:
@@ -413,6 +440,9 @@ public class TeleOp1 extends LinearOpMode {
             }
 
             telemetry.addData("Robot state:", robotState);
+            telemetry.addData("Lift position:", lift.getPosition());
+            telemetry.addData("Extender position:", extender.getPosition());
+            telemetry.addData("Heading:", pinpoint.getHeading(AngleUnit.DEGREES));
             telemetry.addData("Loop time:", loopTime.toString());
             telemetry.addData("Run time:", runTime.toString());
             telemetry.update();

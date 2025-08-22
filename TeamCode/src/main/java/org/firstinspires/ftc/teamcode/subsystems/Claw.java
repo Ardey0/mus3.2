@@ -37,12 +37,12 @@ public class Claw {
         // TODO: calibreaza
         State state;
         double angle = getPosition();
-        if (angle > 280 && angle < 300) {
-            state = State.CLOSED_WITH_SAMPLE;
-        } else if (angle > 300) {
+        if (angle < 190) {
             state = State.CLOSED_NO_SAMPLE;
-        } else {
+        } else if (angle >= 190 && angle < 225) {
             state = State.OPEN;
+        } else {
+            state = State.CLOSED_WITH_SAMPLE;
         }
         return state;
     }
